@@ -1,6 +1,7 @@
-'use client';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { client } from '../../sanity/client';
 
@@ -14,52 +15,44 @@ interface Product {
     imageUrl: string;
 }
 
-export default function ProductsPage() {
-    const [products, setProducts] = useState<Product[]>([]);
-    const [selectedCategory, setSelectedCategory] = useState<string>('Hepsi');
-    const [searchQuery, setSearchQuery] = useState<string>('');
-    const [loading, setLoading] = useState<boolean>(true);
+// Veriyi doğrudan sunucuda çeken fonksiyon (Güvenlik engeline takılmaz)
+async function getProducts() {
+    const query = `*[_type == "product"] {
+    _id,
+    title,
+    category,
+    packaging,
+    description,
+    price,
+    "imageUrl": imageUrl.asset->url
+  }`;
+    try {
+        const data = await client.fetch(query, {}, { next: { revalidate: 0 } });
+        return data || [];
+    } catch (error) {
+        console.error("Sanity sunucu cekim hatasi: ", error);
+        return [];
+    }
+}
 
-    const categories = ['Hepsi', 'Çene Suyu', 'Meşrubat', 'Doğal Köy Ürünleri'];
+interface PageProps {
+    searchParams: Promise<{ kategori?: string; ara?: string }>;
+}
+
+export default async function ProductsPage({ searchParams }: PageProps) {
+    const products: Product[] = await getProducts();
+    const resolvedParams = await searchParams;
+
+    const selectedCategory = resolvedParams.kategori || 'Hepsi';
+    const searchQuery = resolvedParams.ara || '';
     const whatsappNumber = "905349122051";
 
-    useEffect(() => {
-        const fetchProducts = async () => {
-            // DÜZELTME: Sorgu yapısı ve alan eşlemeleri anasayfa ile birebir eşitlendi
-            const query = `*[_type == "product"] {
-        _id,
-        title,
-        category,
-        packaging,
-        description,
-        price,
-        "imageUrl": imageUrl.asset->url
-      }`;
-            try {
-                const data = await client.fetch(query);
-                setProducts(data || []);
-            } catch (error) {
-                console.error("Sanity katalog hatasi: ", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchProducts();
-    }, []);
-
-    // Filtreleme fonksiyonu güvenceye alındı
+    // Sunucu Taraflı Filtreleme
     const filteredProducts = products.filter((product) => {
         if (!product) return false;
-
-        const categoryValue = product.category || '';
-        const titleValue = product.title || '';
-        const descriptionValue = product.description || '';
-
-        const matchesCategory = selectedCategory === 'Hepsi' || categoryValue === selectedCategory;
-        const matchesSearch = titleValue.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            descriptionValue.toLowerCase().includes(searchQuery.toLowerCase());
-
+        const matchesCategory = selectedCategory === 'Hepsi' || product.category === selectedCategory;
+        const matchesSearch = product.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            product.description?.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesCategory && matchesSearch;
     });
 
@@ -97,38 +90,39 @@ export default function ProductsPage() {
                     <p className="text-stone-500 text-sm mt-1">Mağazamızda elden teslim alabileceğiniz güncel ürün çeşitleri</p>
                 </div>
 
-                {/* FİLTRELEME PANELİ */}
+                {/* LOKAL URL DEĞİŞTİRİCİLİ FİLTRE PANELİ */}
                 <div className="bg-white p-5 rounded-[24px_6px_24px_6px] border border-stone-100 shadow-sm mb-12 flex flex-col lg:flex-row gap-6 items-center justify-between">
                     <div className="w-full lg:w-1/3">
-                        <input
-                            type="text"
-                            placeholder="Aradığınız doğal ürünü yazın..."
-                            className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-[14px_4px_14px_4px] focus:outline-none focus:border-cyan-600 text-sm"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
+                        <form method="GET" action="/urunler" className="w-full">
+                            <input
+                                type="text"
+                                name="ara"
+                                placeholder="Aramak için yazıp enter'a basın..."
+                                defaultValue={searchQuery}
+                                className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-[14px_4px_14px_4px] focus:outline-none focus:border-cyan-600 text-sm"
+                            />
+                            <input type="hidden" name="kategori" value={selectedCategory} />
+                        </form>
                     </div>
 
                     <div className="flex gap-2 w-full lg:w-auto overflow-x-auto pb-2 lg:pb-0">
-                        {categories.map((category) => (
-                            <button
-                                key={category}
-                                onClick={() => setSelectedCategory(category)}
-                                className={`px-5 py-2.5 rounded-[12px_4px_12px_4px] text-xs md:text-sm font-black transition-all border-b-2 ${selectedCategory === category
+                        {['Hepsi', 'Çene Suyu', 'Meşrubat', 'Doğal Köy Ürünleri'].map((cat) => (
+                            <Link
+                                key={cat}
+                                href={`/urunler?kategori=${encodeURIComponent(cat)}&ara=${encodeURIComponent(searchQuery)}`}
+                                className={`px-5 py-2.5 rounded-[12px_4px_12px_4px] text-xs md:text-sm font-black transition-all border-b-2 block ${selectedCategory === cat
                                         ? 'bg-cyan-600 text-white border-cyan-800 shadow-md'
                                         : 'bg-stone-100 text-stone-600 border-stone-200 hover:bg-stone-200'
                                     }`}
                             >
-                                {category}
-                            </button>
+                                {cat}
+                            </Link>
                         ))}
                     </div>
                 </div>
 
-                {/* LİSTELEME ALANI */}
-                {loading ? (
-                    <div className="text-center py-20 text-stone-400 text-sm font-medium">Ürün rafları düzenleniyor...</div>
-                ) : filteredProducts.length === 0 ? (
+                {/* KATALOG LİSTELEME ALANI */}
+                {filteredProducts.length === 0 ? (
                     <div className="text-center py-20 bg-white rounded-[2rem_8px_2rem_8px] border border-dashed border-stone-200 text-stone-400 text-sm">
                         Aradığınız kriterlere uygun ürün şu an bulunamadı.
                     </div>
@@ -141,7 +135,7 @@ export default function ProductsPage() {
                                         {product.imageUrl ? (
                                             <img src={product.imageUrl} alt={product.title} className="w-full h-full object-cover" />
                                         ) : (
-                                            <div className="w-full h-full bg-stone-200 flex items-center justify-center text-xs text-stone-400">Görsel Yüklenmedi</div>
+                                            <div className="w-full h-full bg-stone-200 flex items-center justify-center text-xs text-stone-400">Görsel Yok</div>
                                         )}
                                         <span className="absolute top-3 left-3 bg-stone-900/80 text-white font-bold text-[10px] px-2.5 py-1 rounded-[6px_2px_6px_2px]">{product.category}</span>
                                     </div>
@@ -158,7 +152,7 @@ export default function ProductsPage() {
                                             <span className="font-black text-stone-800 bg-stone-50 border border-stone-100 px-2 py-0.5 rounded-[4px_2px_4px_2px]">{product.price}</span>
                                         </div>
                                         <a
-                                            href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`Merhaba, web sitenizdeki "${product.title}" ürünü hakkında bilgi alabilir miyim?`)}`}
+                                            href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`Merhaba, web sitenizdeki "${product.title}" ürününüzün güncel stok durumunu sormak istiyorum.`)}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="w-full py-2.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white text-xs font-black rounded-[12px_4px_12px_4px] text-center block transition-all duration-300"
