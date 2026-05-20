@@ -23,9 +23,9 @@ export default function ProductsPage() {
     const categories = ['Hepsi', 'Çene Suyu', 'Meşrubat', 'Doğal Köy Ürünleri'];
     const whatsappNumber = "905349122051";
 
-    // Veriyi Sanity'den çekme efekti
     useEffect(() => {
         const fetchProducts = async () => {
+            // DÜZELTME: Sorgu yapısı ve alan eşlemeleri anasayfa ile birebir eşitlendi
             const query = `*[_type == "product"] {
         _id,
         title,
@@ -37,9 +37,9 @@ export default function ProductsPage() {
       }`;
             try {
                 const data = await client.fetch(query);
-                setProducts(data);
+                setProducts(data || []);
             } catch (error) {
-                console.error("Sanity data fetch error: ", error);
+                console.error("Sanity katalog hatasi: ", error);
             } finally {
                 setLoading(false);
             }
@@ -48,20 +48,30 @@ export default function ProductsPage() {
         fetchProducts();
     }, []);
 
+    // Filtreleme fonksiyonu güvenceye alındı
     const filteredProducts = products.filter((product) => {
-        const matchesCategory = selectedCategory === 'Hepsi' || product.category === selectedCategory;
-        const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            product.description.toLowerCase().includes(searchQuery.toLowerCase());
+        if (!product) return false;
+
+        const categoryValue = product.category || '';
+        const titleValue = product.title || '';
+        const descriptionValue = product.description || '';
+
+        const matchesCategory = selectedCategory === 'Hepsi' || categoryValue === selectedCategory;
+        const matchesSearch = titleValue.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            descriptionValue.toLowerCase().includes(searchQuery.toLowerCase());
+
         return matchesCategory && matchesSearch;
     });
 
     return (
         <div className="min-h-screen bg-[#fafaf9] text-stone-800 font-sans selection:bg-cyan-100 selection:text-cyan-900">
 
+            {/* TOP BAR */}
             <div className="bg-cyan-950 text-cyan-100 text-center py-2 text-xs font-semibold tracking-wider px-4">
                 🥛 GÜNLÜK TAZE KÖY SÜTÜ VE DOĞAL ÇİFTLİK YUMURTASI MAĞAZAMIZDA!
             </div>
 
+            {/* NAVBAR */}
             <nav className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-stone-100 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-2">
                     <Link href="/" className="flex items-center gap-3">
@@ -77,7 +87,7 @@ export default function ProductsPage() {
                         <Link href="/urunler" className="text-cyan-600 border-b-2 border-cyan-600 pb-1">Ürün Kataloğu</Link>
                         <Link href="/iletisim" className="hover:text-cyan-600 transition">Konum & İletişim</Link>
                     </div>
-                    <a href={`https://wa.me/${whatsappNumber}`} target="_blank" className="bg-emerald-600 text-white font-bold px-5 py-2.5 rounded-[14px_4px_14px_4px] text-xs md:text-sm">WhatsApp</a>
+                    <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer" className="bg-emerald-600 text-white font-bold px-5 py-2.5 rounded-[14px_4px_14px_4px] text-xs md:text-sm">WhatsApp</a>
                 </div>
             </nav>
 
@@ -87,6 +97,7 @@ export default function ProductsPage() {
                     <p className="text-stone-500 text-sm mt-1">Mağazamızda elden teslim alabileceğiniz güncel ürün çeşitleri</p>
                 </div>
 
+                {/* FİLTRELEME PANELİ */}
                 <div className="bg-white p-5 rounded-[24px_6px_24px_6px] border border-stone-100 shadow-sm mb-12 flex flex-col lg:flex-row gap-6 items-center justify-between">
                     <div className="w-full lg:w-1/3">
                         <input
@@ -114,8 +125,9 @@ export default function ProductsPage() {
                     </div>
                 </div>
 
+                {/* LİSTELEME ALANI */}
                 {loading ? (
-                    <div className="text-center py-20 text-stone-400">Ürün rafları yükleniyor...</div>
+                    <div className="text-center py-20 text-stone-400 text-sm font-medium">Ürün rafları düzenleniyor...</div>
                 ) : filteredProducts.length === 0 ? (
                     <div className="text-center py-20 bg-white rounded-[2rem_8px_2rem_8px] border border-dashed border-stone-200 text-stone-400 text-sm">
                         Aradığınız kriterlere uygun ürün şu an bulunamadı.
@@ -123,10 +135,14 @@ export default function ProductsPage() {
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
                         {filteredProducts.map((product) => (
-                            <div key={product._id} className="bg-white rounded-[2rem_8px_2rem_8px] p-4 border border-stone-100 hover:border-cyan-100 shadow-xs flex flex-col justify-between group">
+                            <div key={product._id} className="bg-white rounded-[2rem_8px_2rem_8px] p-4 border border-stone-100 hover:border-cyan-100 shadow-xs flex flex-col justify-between group transition-all duration-300">
                                 <div>
                                     <div className="relative h-48 w-full rounded-[1.5rem_4px_1.5rem_4px] overflow-hidden bg-stone-50">
-                                        {product.imageUrl && <img src={product.imageUrl} alt={product.title} className="w-full h-full object-cover" />}
+                                        {product.imageUrl ? (
+                                            <img src={product.imageUrl} alt={product.title} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full bg-stone-200 flex items-center justify-center text-xs text-stone-400">Görsel Yüklenmedi</div>
+                                        )}
                                         <span className="absolute top-3 left-3 bg-stone-900/80 text-white font-bold text-[10px] px-2.5 py-1 rounded-[6px_2px_6px_2px]">{product.category}</span>
                                     </div>
                                     <div className="p-3">
@@ -141,7 +157,14 @@ export default function ProductsPage() {
                                             <span className="text-stone-400">Fiyat Bilgisi</span>
                                             <span className="font-black text-stone-800 bg-stone-50 border border-stone-100 px-2 py-0.5 rounded-[4px_2px_4px_2px]">{product.price}</span>
                                         </div>
-                                        <a href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`Merhaba, ${product.title} stoğunu sormak istiyorum.`)}`} target="_blank" className="w-full py-2.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white text-xs font-black rounded-[12px_4px_12px_4px] text-center block">Fiyat & Stok Sor 💬</a>
+                                        <a
+                                            href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`Merhaba, web sitenizdeki "${product.title}" ürünü hakkında bilgi alabilir miyim?`)}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="w-full py-2.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white text-xs font-black rounded-[12px_4px_12px_4px] text-center block transition-all duration-300"
+                                        >
+                                            Fiyat & Stok Sor 💬
+                                        </a>
                                     </div>
                                 </div>
                             </div>
