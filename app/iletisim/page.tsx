@@ -8,21 +8,40 @@ export default function Iletisim() {
         <div className="min-h-screen bg-[#fafaf9] text-stone-800 font-sans">
 
             {/* NAVBAR */}
-            <nav className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-stone-100">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <nav className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-stone-100 shadow-sm">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-2">
                     <Link href="/" className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-[12px_4px_12px_4px] bg-gradient-to-tr from-cyan-600 to-lime-500 flex items-center justify-center text-white font-black text-xl shadow-md">Ç</div>
                         <div className="flex flex-col text-left">
-                            <span className="text-base font-black tracking-tight text-cyan-900 leading-tight">TATLIKUYU DOĞAL</span>
+                            <span className="text-base md:text-lg font-black tracking-tight text-cyan-900 leading-tight">TATLIKUYU DOĞAL</span>
                             <span className="text-[10px] uppercase tracking-widest text-lime-600 font-extrabold">Çene Suyu & Şarküteri</span>
                         </div>
                     </Link>
-                    <div className="hidden md:flex space-x-8 text-sm font-bold text-stone-600">
-                        <Link href="/" className="hover:text-cyan-600 transition">Anasayfa</Link>
-                        <Link href="/kurumsal" className="hover:text-cyan-600 transition">Mağazamız</Link>
-                        <Link href="/urunler" className="hover:text-cyan-600 transition">Ürün Kataloğu</Link>
-                        <Link href="/iletisim" className="text-cyan-600 border-b-2 border-cyan-600">İletişim</Link>
+
+                    {/* TÜM SİTEDE ORTAK ASİMETRİK KAPSÜL MENÜ */}
+                    <div className="hidden md:flex space-x-3 text-xs font-black tracking-wide text-stone-600">
+                        <Link href="/" className="hover:bg-stone-50 px-4 py-2 rounded-[10px_3px_10px_3px] transition">
+                            Anasayfa
+                        </Link>
+                        <Link href="/kurumsal" className="hover:bg-stone-50 px-4 py-2 rounded-[10px_3px_10px_3px] transition">
+                            Mağazamız
+                        </Link>
+                        <Link href="/urunler" className="hover:bg-stone-50 px-4 py-2 rounded-[10px_3px_10px_3px] transition">
+                            Ürün Kataloğu
+                        </Link>
+                        <Link href="/iletisim" className="bg-cyan-50 text-cyan-700 px-4 py-2 rounded-[10px_3px_10px_3px] border border-cyan-100">
+                            Konum & İletişim
+                        </Link>
                     </div>
+
+                    <a
+                        href="https://wa.me/905349122051"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-[14px_4px_14px_4px] text-xs md:text-sm flex items-center gap-2 shadow-sm border-b-2 border-emerald-800"
+                    >
+                        Hızlı İletişim
+                    </a>
                 </div>
             </nav>
 
