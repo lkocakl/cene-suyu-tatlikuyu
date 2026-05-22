@@ -74,11 +74,21 @@ export default async function ProductsPage({ searchParams }: PageProps) {
                             <span className="text-[10px] uppercase tracking-widest text-lime-600 font-extrabold">Çene Suyu & Şarküteri</span>
                         </div>
                     </Link>
-                    <div className="hidden md:flex space-x-6 font-bold text-stone-600 text-sm">
-                        <Link href="/" className="hover:text-cyan-600 transition">Anasayfa</Link>
-                        <Link href="/kurumsal" className="hover:text-cyan-600 transition">Mağazamız</Link>
-                        <Link href="/urunler" className="text-cyan-600 border-b-2 border-cyan-600 pb-1">Ürün Kataloğu</Link>
-                        <Link href="/iletisim" className="hover:text-cyan-600 transition">Konum & İletişim</Link>
+
+                    {/* DÜZELTME: Ürünler sayfasında aktif sekme tasarımı */}
+                    <div className="hidden md:flex space-x-3 text-xs font-black tracking-wide text-stone-600">
+                        <Link href="/" className="hover:bg-stone-50 px-4 py-2 rounded-[10px_3px_10px_3px] transition">
+                            Anasayfa
+                        </Link>
+                        <Link href="/kurumsal" className="hover:bg-stone-50 px-4 py-2 rounded-[10px_3px_10px_3px] transition">
+                            Mağazamız
+                        </Link>
+                        <Link href="/urunler" className="bg-cyan-50 text-cyan-700 px-4 py-2 rounded-[10px_3px_10px_3px] border border-cyan-100">
+                            Ürün Kataloğu
+                        </Link>
+                        <Link href="/iletisim" className="hover:bg-stone-50 px-4 py-2 rounded-[10px_3px_10px_3px] transition">
+                            Konum & İletişim
+                        </Link>
                     </div>
                     <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer" className="bg-emerald-600 text-white font-bold px-5 py-2.5 rounded-[14px_4px_14px_4px] text-xs md:text-sm">WhatsApp</a>
                 </div>
@@ -111,8 +121,8 @@ export default async function ProductsPage({ searchParams }: PageProps) {
                                 key={cat}
                                 href={`/urunler?kategori=${encodeURIComponent(cat)}&ara=${encodeURIComponent(searchQuery)}`}
                                 className={`px-5 py-2.5 rounded-[12px_4px_12px_4px] text-xs md:text-sm font-black transition-all border-b-2 block ${selectedCategory === cat
-                                        ? 'bg-cyan-600 text-white border-cyan-800 shadow-md'
-                                        : 'bg-stone-100 text-stone-600 border-stone-200 hover:bg-stone-200'
+                                    ? 'bg-cyan-600 text-white border-cyan-800 shadow-md'
+                                    : 'bg-stone-100 text-stone-600 border-stone-200 hover:bg-stone-200'
                                     }`}
                             >
                                 {cat}

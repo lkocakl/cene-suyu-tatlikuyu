@@ -58,18 +58,27 @@ export default async function Home() {
             </div>
           </Link>
 
-          <div className="hidden md:flex space-x-8 text-sm font-bold text-stone-600">
-            <Link href="/" className="text-cyan-600 border-b-2 border-cyan-600 pb-1">Anasayfa</Link>
-            <Link href="/kurumsal" className="hover:text-cyan-600 transition pb-1">Mağazamız</Link>
-            <Link href="/urunler" className="hover:text-cyan-600 transition pb-1">Ürün Kataloğu</Link>
-            <Link href="/iletisim" className="hover:text-cyan-600 transition pb-1">Konum & İletişim</Link>
+          {/* DÜZELTME: Emlak sitesindeki o düz çizgili menü yapısı tamamen kaldırıldı */}
+          <div className="hidden md:flex space-x-3 text-xs font-black tracking-wide text-stone-600">
+            <Link href="/" className="bg-cyan-50 text-cyan-700 px-4 py-2 rounded-[10px_3px_10px_3px] border border-cyan-100">
+              Anasayfa
+            </Link>
+            <Link href="/kurumsal" className="hover:bg-stone-50 px-4 py-2 rounded-[10px_3px_10px_3px] transition">
+              Mağazamız
+            </Link>
+            <Link href="/urunler" className="hover:bg-stone-50 px-4 py-2 rounded-[10px_3px_10px_3px] transition">
+              Ürün Kataloğu
+            </Link>
+            <Link href="/iletisim" className="hover:bg-stone-50 px-4 py-2 rounded-[10px_3px_10px_3px] transition">
+              Konum & İletişim
+            </Link>
           </div>
 
           <a
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-[14px_4px_14px_4px] transition-all duration-300 transform hover:-translate-y-0.5 border-b-2 border-emerald-800 text-xs md:text-sm"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-[14px_4px_14px_4px] transition-all duration-300 transform hover:-translate-y-0.5 border-b-2 border-emerald-800 text-xs md:text-sm flex items-center gap-2"
           >
             Hızlı İletişim
           </a>
