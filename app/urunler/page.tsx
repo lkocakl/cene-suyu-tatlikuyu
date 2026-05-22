@@ -4,6 +4,7 @@ export const revalidate = 0;
 import React from 'react';
 import Link from 'next/link';
 import { client } from '../../sanity/client';
+import Navbar from '../../components/Navbar';
 
 interface Product {
     _id: string;
@@ -15,7 +16,6 @@ interface Product {
     imageUrl: string;
 }
 
-// Veriyi doğrudan sunucuda çeken fonksiyon (Güvenlik engeline takılmaz)
 async function getProducts() {
     const query = `*[_type == "product"] {
     _id,
@@ -30,7 +30,6 @@ async function getProducts() {
         const data = await client.fetch(query, {}, { next: { revalidate: 0 } });
         return data || [];
     } catch (error) {
-        console.error("Sanity sunucu cekim hatasi: ", error);
         return [];
     }
 }
@@ -47,7 +46,6 @@ export default async function ProductsPage({ searchParams }: PageProps) {
     const searchQuery = resolvedParams.ara || '';
     const whatsappNumber = "905349122051";
 
-    // Sunucu Taraflı Filtreleme
     const filteredProducts = products.filter((product) => {
         if (!product) return false;
         const matchesCategory = selectedCategory === 'Hepsi' || product.category === selectedCategory;
@@ -58,41 +56,7 @@ export default async function ProductsPage({ searchParams }: PageProps) {
 
     return (
         <div className="min-h-screen bg-[#fafaf9] text-stone-800 font-sans selection:bg-cyan-100 selection:text-cyan-900">
-
-            {/* TOP BAR */}
-            <div className="bg-cyan-950 text-cyan-100 text-center py-2 text-xs font-semibold tracking-wider px-4">
-                🥛 GÜNLÜK TAZE KÖY SÜTÜ VE DOĞAL ÇİFTLİK YUMURTASI MAĞAZAMIZDA!
-            </div>
-
-            {/* NAVBAR */}
-            <nav className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-stone-100 shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-2">
-                    <Link href="/" className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-[12px_4px_12px_4px] bg-gradient-to-tr from-cyan-600 to-lime-500 flex items-center justify-center text-white font-black text-xl shadow-md">Ç</div>
-                        <div className="flex flex-col">
-                            <span className="text-base md:text-lg font-black tracking-tight text-cyan-900 leading-tight">TATLIKUYU DOĞAL</span>
-                            <span className="text-[10px] uppercase tracking-widest text-lime-600 font-extrabold">Çene Suyu & Şarküteri</span>
-                        </div>
-                    </Link>
-
-                    {/* DÜZELTME: Ürünler sayfasında aktif sekme tasarımı */}
-                    <div className="hidden md:flex space-x-3 text-xs font-black tracking-wide text-stone-600">
-                        <Link href="/" className="hover:bg-stone-50 px-4 py-2 rounded-[10px_3px_10px_3px] transition">
-                            Anasayfa
-                        </Link>
-                        <Link href="/kurumsal" className="hover:bg-stone-50 px-4 py-2 rounded-[10px_3px_10px_3px] transition">
-                            Mağazamız
-                        </Link>
-                        <Link href="/urunler" className="bg-cyan-50 text-cyan-700 px-4 py-2 rounded-[10px_3px_10px_3px] border border-cyan-100">
-                            Ürün Kataloğu
-                        </Link>
-                        <Link href="/iletisim" className="hover:bg-stone-50 px-4 py-2 rounded-[10px_3px_10px_3px] transition">
-                            Konum & İletişim
-                        </Link>
-                    </div>
-                    <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer" className="bg-emerald-600 text-white font-bold px-5 py-2.5 rounded-[14px_4px_14px_4px] text-xs md:text-sm">WhatsApp</a>
-                </div>
-            </nav>
+            <Navbar />
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="mb-8">
@@ -100,7 +64,7 @@ export default async function ProductsPage({ searchParams }: PageProps) {
                     <p className="text-stone-500 text-sm mt-1">Mağazamızda elden teslim alabileceğiniz güncel ürün çeşitleri</p>
                 </div>
 
-                {/* LOKAL URL DEĞİŞTİRİCİLİ FİLTRE PANELİ */}
+                {/* FİLTRELEME PANELİ */}
                 <div className="bg-white p-5 rounded-[24px_6px_24px_6px] border border-stone-100 shadow-sm mb-12 flex flex-col lg:flex-row gap-6 items-center justify-between">
                     <div className="w-full lg:w-1/3">
                         <form method="GET" action="/urunler" className="w-full">
@@ -121,8 +85,8 @@ export default async function ProductsPage({ searchParams }: PageProps) {
                                 key={cat}
                                 href={`/urunler?kategori=${encodeURIComponent(cat)}&ara=${encodeURIComponent(searchQuery)}`}
                                 className={`px-5 py-2.5 rounded-[12px_4px_12px_4px] text-xs md:text-sm font-black transition-all border-b-2 block ${selectedCategory === cat
-                                    ? 'bg-cyan-600 text-white border-cyan-800 shadow-md'
-                                    : 'bg-stone-100 text-stone-600 border-stone-200 hover:bg-stone-200'
+                                        ? 'bg-cyan-600 text-white border-cyan-800'
+                                        : 'bg-stone-100 text-stone-600 border-stone-200 hover:bg-stone-200'
                                     }`}
                             >
                                 {cat}
@@ -131,7 +95,7 @@ export default async function ProductsPage({ searchParams }: PageProps) {
                     </div>
                 </div>
 
-                {/* KATALOG LİSTELEME ALANI */}
+                {/* LİSTELEME ALANI */}
                 {filteredProducts.length === 0 ? (
                     <div className="text-center py-20 bg-white rounded-[2rem_8px_2rem_8px] border border-dashed border-stone-200 text-stone-400 text-sm">
                         Aradığınız kriterlere uygun ürün şu an bulunamadı.
