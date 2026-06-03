@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 interface Product {
     _id: string;
@@ -69,11 +70,10 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
         e.preventDefault();
 
         if (!customerName.trim()) {
-            alert("Lütfen adınızı veya işletme adınızı girin.");
+            toast.error("Lütfen adınızı veya işletme adınızı girin.");
             return;
         }
 
-        // Seçilen tarihin milisaniye doğrulaması
         const selectedDate = new Date(pickupDateTime);
         const now = new Date();
         const maxAllowedDate = new Date(now);
@@ -81,30 +81,26 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
         maxAllowedDate.setHours(23, 59, 59, 999);
 
         if (selectedDate < now) {
-            alert("Geçmiş bir zamana sipariş oluşturamazsınız.");
+            toast.error("Geçmiş bir zamana sipariş oluşturamazsınız.");
             return;
         }
 
         if (selectedDate > maxAllowedDate) {
-            alert("Siparişler en fazla 1 gün sonrasına (Yarına) oluşturulabilir.");
+            toast.error("Siparişler en fazla 1 gün sonrasına oluşturulabilir.");
             return;
         }
 
         const selectedItems = products.filter(p => quantities[p._id] && quantities[p._id] > 0);
 
         if (selectedItems.length === 0) {
-            alert("Lütfen en az bir üründen sipariş adedi seçiniz.");
+            toast.error("Lütfen en az bir üründen sipariş adedi seçiniz.");
             return;
         }
 
         localStorage.setItem('tatlikuyu_customer_name', customerName);
 
         const formattedDate = new Date(pickupDateTime).toLocaleString('tr-TR', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
+            day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
         });
 
         let message = `🏪 *TATLIKUYU DOĞAL - GEL-AL SİPARİŞİ*\n\n`;
@@ -123,9 +119,16 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
         message += `\n💰 _Ödeme dükkanda teslimat esnasında (Nakit/Kart) yapılacaktır._\n`;
         message += `⏱️ _Bu sipariş web sitesi hızlı formu ile dükkanda hazır edilmek üzere gönderilmiştir._`;
 
+        // Başarı bildirimi
+        toast.success("Sipariş WhatsApp'a yönlendiriliyor...", { icon: '🚀' });
+
         const whatsappNumber = "905349122051";
         const finalUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
-        window.open(finalUrl, '_blank');
+
+        // Yönlendirme için 1 saniye beklet (Kullanıcı başarı mesajını görsün)
+        setTimeout(() => {
+            window.open(finalUrl, '_blank');
+        }, 1000);
     };
 
     return (
