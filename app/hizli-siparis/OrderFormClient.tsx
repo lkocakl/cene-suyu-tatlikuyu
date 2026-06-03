@@ -17,23 +17,47 @@ interface OrderFormClientProps {
 }
 
 export default function OrderFormClient({ products }: OrderFormClientProps) {
-    // Ürün ID'sini ve seçilen adedi tutan state matrisi
     const [quantities, setQuantities] = useState<{ [key: string]: number }>({});
-
-    // Müşteri Form Bilgileri
     const [customerName, setCustomerName] = useState('');
-    const [pickupTime, setPickupTime] = useState('15-20 Dakika Sonra');
+    const [pickupDateTime, setPickupDateTime] = useState('');
     const [note, setNote] = useState('');
 
-    // Tarayıcı hafızasından (Local Storage) müşteri adını otomatik yükleme
+    // Dinamik olarak takvim sınırlarını (Bugün ve Yarın) hesaplayan değişkenler
+    const [minDateStr, setMinDateStr] = useState('');
+    const [maxDateStr, setMaxDateStr] = useState('');
+
     useEffect(() => {
+        // Hafızadan isim yükleme
         const savedName = localStorage.getItem('tatlikuyu_customer_name');
         if (savedName) {
             setCustomerName(savedName);
         }
+
+        // Tarih ve saat sınırlarını belirleme (Bugün ve Yarın)
+        const now = new Date();
+
+        // Minimum zaman: Şuan
+        const minYear = now.getFullYear();
+        const minMonth = String(now.getMonth() + 1).padStart(2, '0');
+        const minDay = String(now.getDate()).padStart(2, '0');
+        const minHours = String(now.getHours()).padStart(2, '0');
+        const minMinutes = String(now.getMinutes()).padStart(2, '0');
+        setMinDateStr(`${minYear}-${minMonth}-${minDay}T${minHours}:${minMinutes}`);
+
+        // Maksimum zaman: En fazla 1 gün sonrası (Yarın gece sonu)
+        const maxDate = new Date();
+        maxDate.setDate(now.getDate() + 1);
+        maxDate.setHours(23, 59, 0, 0); // Yarın gün sonuna kadar
+
+        const maxYear = maxDate.getFullYear();
+        const maxMonth = String(maxDate.getMonth() + 1).padStart(2, '0');
+        const maxDay = String(maxDate.getDate()).padStart(2, '0');
+        setMaxDateStr(`${maxYear}-${maxMonth}-${maxDay}T23:59`);
+
+        // Varsayılan olarak kutunun içine şimdiki zamanı yazalım
+        setPickupDateTime(`${minYear}-${minMonth}-${minDay}T${minHours}:${minMinutes}`);
     }, []);
 
-    // Adet Arttırma / Azaltma Fonksiyonları
     const handleIncrement = (id: string) => {
         setQuantities(prev => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
     };
@@ -44,7 +68,6 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
         }
     };
 
-    // WhatsApp Sipariş Paketleme Motoru
     const handleSendOrder = (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -53,7 +76,19 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
             return;
         }
 
-        // Seçilen ürünleri filtrele
+        // Seçilen tarihi kontrol etme (1 günden fazlası engelleniyor)
+        const selectedDate = new Date(pickupDateTime);
+        const now = new Date();
+
+        // Zaman farkını gün cinsinden hesapla
+        const diffTime = selectedDate.getTime() - now.getTime();
+        const diffDays = diffTime / (1000 * 60 * 60 * 24);
+
+        if (diffDays > 1.05) { // Çok ufak saat esnemesi payı ile maksimum 1 gün sınırı
+            alert("Siparişler kalitenin korunması adına en fazla 1 gün sonrasına oluşturulabilir.");
+            return;
+        }
+
         const selectedItems = products.filter(p => quantities[p._id] && quantities[p._id] > 0);
 
         if (selectedItems.length === 0) {
@@ -61,13 +96,20 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
             return;
         }
 
-        // İsmi gelecekteki siparişler için hafızaya kilitle
         localStorage.setItem('tatlikuyu_customer_name', customerName);
 
-        // Adım 14: Özgün WhatsApp Mesaj Formatı Oluşturma
+        // Tarihi okunaklı formata çevirme (Örn: 23/05/2026 14:30)
+        const formattedDate = new Date(pickupDateTime).toLocaleString('tr-TR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
         let message = `🏪 *TATLIKUYU DOĞAL - GEL-AL SİPARİŞİ*\n\n`;
         message += `👤 *Müşteri:* ${customerName}\n`;
-        message += `⏰ *Geliş Zamanı:* ${pickupTime}\n`;
+        message += `⏰ *Geliş Zamanı:* ${formattedDate}\n`;
         if (note.trim()) {
             message += `📝 *Müşteri Notu:* ${note}\n`;
         }
@@ -81,16 +123,15 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
         message += `\n💰 _Ödeme dükkanda teslimat esnasında (Nakit/Kart) yapılacaktır._\n`;
         message += `⏱️ _Bu sipariş web sitesi hızlı formu ile dükkanda hazır edilmek üzere gönderilmiştir._`;
 
-        // WhatsApp API URL yönlendirmesi
         const whatsappNumber = "905349122051";
         const finalUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
         window.open(finalUrl, '_blank');
     };
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start pb-24 md:pb-0">
 
-            {/* SOL TARAF: ÜRÜN MATRİSİ (VİDEODAKİ GİBİ ADET SEÇİLİNCE YEŞİL OLAN ALAN) */}
+            {/* SOL TARAF: ÜRÜN MATRİSİ */}
             <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {products.map((product) => {
                     const currentQty = quantities[product._id] || 0;
@@ -120,7 +161,6 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
                                 <p className="text-stone-400 text-[11px] mt-1 line-clamp-2 leading-relaxed">{product.description}</p>
                             </div>
 
-                            {/* ASİMETRİK ARTTIRMA VE AZALTMA BUTONLARI */}
                             <div className="mt-4 pt-3 border-t border-stone-100/60 flex items-center justify-between gap-2">
                                 <span className="text-xs font-black text-stone-600 bg-stone-50 px-2 py-1 rounded-[4px_2px_4px_2px]">
                                     {product.price}
@@ -130,7 +170,7 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
                                     <button
                                         type="button"
                                         onClick={() => handleDecrement(product._id)}
-                                        className="w-8 h-8 rounded-[6px_2px_6px_2px] bg-white hover:bg-stone-200 text-stone-800 font-bold text-sm transition active:scale-90"
+                                        className="w-8 h-8 rounded-[6px_2px_6px_2px] bg-white hover:bg-stone-200 text-stone-800 font-bold text-sm transition"
                                     >
                                         -
                                     </button>
@@ -140,7 +180,7 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
                                     <button
                                         type="button"
                                         onClick={() => handleIncrement(product._id)}
-                                        className="w-8 h-8 rounded-[6px_2px_6px_2px] bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-sm transition active:scale-90"
+                                        className="w-8 h-8 rounded-[6px_2px_6px_2px] bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-sm transition"
                                     >
                                         +
                                     </button>
@@ -152,7 +192,7 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
                 })}
             </div>
 
-            {/* SAĞ TARAF: MÜŞTERİ BİLGİ VE SİPARİŞÖZETİ PANOSU */}
+            {/* SAĞ TARAF: BİLGİ VE SİPARİŞ ÖZETİ PANOSU */}
             <div className="lg:col-span-4 bg-gradient-to-br from-cyan-900 to-cyan-950 text-white p-6 md:p-8 rounded-[2.5rem_8px_2.5rem_8px] shadow-xl space-y-6 sticky top-24 border-b-8 border-cyan-950">
                 <div>
                     <h2 className="text-xl font-black tracking-tight">Gel-Al Bilgileri</h2>
@@ -164,34 +204,34 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
                         <label className="text-[10px] uppercase font-black tracking-widest text-cyan-300 block mb-1.5">Adınız / İşletme Adı</label>
                         <input
                             type="text"
-                            placeholder="Örn: Ahmet Yılmaz veya Tatlıkuyu Bakkalı"
+                            placeholder="İsim Soyisim giriniz"
                             required
-                            className="w-full px-4 py-3 bg-white/10 border border-white/10 rounded-[12px_4px_12px_4px] focus:outline-none focus:border-lime-400 text-white placeholder:text-white/30 text-xs font-medium"
+                            className="w-full px-4 py-3 bg-white/10 border border-white/10 rounded-[12px_4px_12px_4px] focus:outline-none focus:border-lime-400 text-white placeholder:text-white/40 text-xs font-medium"
                             value={customerName}
                             onChange={(e) => setCustomerName(e.target.value)}
                         />
                     </div>
 
                     <div>
-                        <label className="text-[10px] uppercase font-black tracking-widest text-cyan-300 block mb-1.5">Ne Zaman Geleceksiniz?</label>
-                        <select
-                            className="w-full px-4 py-3 bg-cyan-800 border border-white/10 rounded-[12px_4px_12px_4px] focus:outline-none focus:border-lime-400 text-white text-xs font-bold"
-                            value={pickupTime}
-                            onChange={(e) => setPickupTime(e.target.value)}
-                        >
-                            <option value="15-20 Takika Sonra" className="bg-cyan-900">15-20 Dakika Sonra</option>
-                            <option value="1 Saat Sonra" className="bg-cyan-900">1 Saat Sonra</option>
-                            <option value="Akşam Saatlerinde (18:00 - 20:30)" className="bg-cyan-900">Akşam Saatlerinde (18:00 - 20:30)</option>
-                            <option value="Yarın Sabah" className="bg-cyan-900">Yarın Sabah</option>
-                        </select>
+                        <label className="text-[10px] uppercase font-black tracking-widest text-cyan-300 block mb-1.5">Geliş Tarihi ve Saati</label>
+                        <input
+                            type="datetime-local"
+                            required
+                            min={minDateStr}
+                            max={maxDateStr}
+                            className="w-full px-4 py-3 bg-white/10 border border-white/10 rounded-[12px_4px_12px_4px] focus:outline-none focus:border-lime-400 text-white text-xs font-bold [color-scheme:dark]"
+                            value={pickupDateTime}
+                            onChange={(e) => setPickupDateTime(e.target.value)}
+                        />
+                        <span className="text-[10px] text-cyan-200/40 block mt-1">En fazla bugüne veya yarına sipariş oluşturulabilir.</span>
                     </div>
 
                     <div>
                         <label className="text-[10px] uppercase font-black tracking-widest text-cyan-300 block mb-1.5">Dükkan Sahibine Not (Opsiyonel)</label>
                         <textarea
                             rows={3}
-                            placeholder="Örn: Arabanın bagajına yükleyeceğiz kapıya hazır ederseniz sevinirim..."
-                            className="w-full px-4 py-3 bg-white/10 border border-white/10 rounded-[12px_4px_12px_4px] focus:outline-none focus:border-lime-400 text-white placeholder:text-white/30 text-xs font-medium resize-none"
+                            placeholder=""
+                            className="w-full px-4 py-3 bg-white/10 border border-white/10 rounded-[12px_4px_12px_4px] focus:outline-none focus:border-lime-400 text-white text-xs font-medium resize-none"
                             value={note}
                             onChange={(e) => setNote(e.target.value)}
                         />
@@ -199,7 +239,7 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
 
                     <button
                         type="submit"
-                        className="w-full py-4 bg-lime-500 hover:bg-lime-600 text-cyan-950 font-black text-xs uppercase tracking-wider rounded-[14px_4px_14px_4px] transition-all transform hover:scale-[1.02] active:scale-95 border-b-4 border-lime-700 shadow-md mt-6"
+                        className="w-full py-4 bg-lime-500 hover:bg-lime-600 text-cyan-950 font-black text-xs uppercase tracking-wider rounded-[14px_4px_14px_4px] transition-all transform hover:scale-[1.02] border-b-4 border-lime-700 shadow-md mt-6"
                     >
                         Siparişi Hazırla & WhatsApp'a Gönder 🚀
                     </button>
