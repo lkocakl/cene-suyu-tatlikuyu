@@ -12,23 +12,25 @@ export default function Navbar() {
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${defaultMessage}`;
 
     const navItems = [
-        { label: 'Anasayfa', path: '/' },
-        { label: 'Mağazamız', path: '/kurumsal' },
-        { label: 'Ürün Kataloğu', path: '/urunler' },
-        { label: 'Hızlı Sipariş ⚡', path: '/hizli-siparis' }, // Yeni sekmemiz eklendi
-        { label: 'Konum & İletişim', path: '/iletisim' },
+        { label: 'Anasayfa', path: '/', icon: '🏠' },
+        { label: 'Mağazamız', path: '/kurumsal', icon: '🏪' },
+        { label: 'Ürün Kataloğu', path: '/urunler', icon: '📋' },
+        { label: 'Hızlı Sipariş ⚡', path: '/hizli-siparis', icon: '⚡' },
+        { label: 'İletişim', path: '/iletisim', icon: '📍' },
     ];
 
     return (
         <div className="w-full sticky top-0 z-50">
-            {/* Her sayfada sabit duracak beğendiğin duyuru barı */}
-            <div className="bg-cyan-950 text-cyan-100 text-center py-2 text-xs font-semibold tracking-wider px-4">
-                **🥛 GÜNLÜK TAZE KÖY SÜTÜ VE DOĞAL ÇİFTLİK YUMURTASI MAĞAZAMIZDA!**
+            {/* 1. ÜST DUYURU BAR (Hem Mobil Hem Masaüstü Görür) */}
+            <div className="bg-cyan-950 text-cyan-100 text-center py-2 text-[10px] md:text-xs font-semibold tracking-wider px-4 shadow-sm">
+                🥛 GÜNLÜK TAZE KÖY SÜTÜ VE DOĞAL ÇİFTLİK YUMURTASI MAĞAZAMIZDA!
             </div>
 
+            {/* 2. MASAÜSTÜ ANA NAVBAR */}
             <nav className="bg-white/80 backdrop-blur-md border-b border-stone-100 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-2">
 
+                    {/* Logo Alanı */}
                     <Link href="/" className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-[12px_4px_12px_4px] bg-gradient-to-tr from-cyan-600 to-lime-500 flex items-center justify-center text-white font-black text-xl shadow-md">
                             Ç
@@ -39,7 +41,7 @@ export default function Navbar() {
                         </div>
                     </Link>
 
-                    {/* Asimetrik Kapsül Menü Butonları */}
+                    {/* Masaüstü Sekme Butonları (Büyük ekranlarda açılır) */}
                     <div className="hidden md:flex space-x-2 text-xs font-black tracking-wide text-stone-600">
                         {navItems.map((item) => {
                             const isActive = pathname === item.path;
@@ -48,8 +50,8 @@ export default function Navbar() {
                                     key={item.path}
                                     href={item.path}
                                     className={`px-4 py-2 rounded-[10px_3px_10px_3px] transition-all duration-200 border ${isActive
-                                        ? 'bg-cyan-50 text-cyan-700 border-cyan-100 shadow-sm'
-                                        : 'border-transparent hover:bg-stone-50 text-stone-600'
+                                            ? 'bg-cyan-50 text-cyan-700 border-cyan-100 shadow-sm'
+                                            : 'border-transparent hover:bg-stone-50 text-stone-600'
                                         }`}
                                 >
                                     {item.label}
@@ -58,17 +60,41 @@ export default function Navbar() {
                         })}
                     </div>
 
+                    {/* Sağ Üst Sabit Hızlı İletişim Butonu */}
                     <a
                         href={whatsappUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-[14px_4px_14px_4px] transition-all duration-300 transform hover:-translate-y-0.5 border-b-2 border-emerald-800 text-xs md:text-sm flex items-center gap-2"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-[14px_4px_14px_4px] transition-all duration-300 transform hover:-translate-y-0.5 border-b-2 border-emerald-800 text-xs md:text-sm flex items-center gap-2 shadow-sm"
                     >
-                        <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
                         Hızlı İletişim
                     </a>
                 </div>
             </nav>
+
+            {/* 3. YENİLİKÇİ MOBİL ALT BARI (Sadece mobilde alt tarafa yapışık, modern uygulama menüsü) */}
+            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-stone-200/60 shadow-[0_-8px_30px_rgb(0,0,0,0.06)] px-2 py-2 flex justify-around items-center z-50 rounded-[20px_20px_0px_0px]">
+                {navItems.map((item) => {
+                    const isActive = pathname === item.path;
+                    return (
+                        <Link
+                            key={item.path}
+                            href={item.path}
+                            className={`flex flex-col items-center justify-center flex-1 py-1.5 px-1 rounded-[12px_4px_12px_4px] transition-all ${isActive
+                                    ? 'text-cyan-700 font-black bg-cyan-50/80 border border-cyan-100/50 scale-105'
+                                    : 'text-stone-500 font-medium'
+                                }`}
+                        >
+                            <span className="text-lg mb-0.5">{item.icon}</span>
+                            {/* Çok uzun isimleri mobilde kısaltmak için küçük kurallar */}
+                            <span className="text-[9px] tracking-tight whitespace-nowrap">
+                                {item.label === 'Konum & İletişim' ? 'İletişim' : item.label.replace(' ⚡', '')}
+                            </span>
+                        </Link>
+                    );
+                })}
+            </div>
         </div>
     );
 }
