@@ -20,42 +20,39 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
     const [quantities, setQuantities] = useState<{ [key: string]: number }>({});
     const [customerName, setCustomerName] = useState('');
     const [pickupDateTime, setPickupDateTime] = useState('');
-    const [note, setNote] = useState('');
-
-    // Dinamik olarak takvim sınırlarını (Bugün ve Yarın) hesaplayan değişkenler
     const [minDateStr, setMinDateStr] = useState('');
     const [maxDateStr, setMaxDateStr] = useState('');
+    const [note, setNote] = useState('');
 
     useEffect(() => {
-        // Hafızadan isim yükleme
+        // Hafızadan müşteri ismini yükle
         const savedName = localStorage.getItem('tatlikuyu_customer_name');
         if (savedName) {
             setCustomerName(savedName);
         }
 
-        // Tarih ve saat sınırlarını belirleme (Bugün ve Yarın)
+        // Bilgisayarın/Telefonun yerel saatine göre net tarih hesaplama
         const now = new Date();
 
-        // Minimum zaman: Şuan
-        const minYear = now.getFullYear();
-        const minMonth = String(now.getMonth() + 1).padStart(2, '0');
-        const minDay = String(now.getDate()).padStart(2, '0');
-        const minHours = String(now.getHours()).padStart(2, '0');
-        const minMinutes = String(now.getMinutes()).padStart(2, '0');
-        setMinDateStr(`${minYear}-${minMonth}-${minDay}T${minHours}:${minMinutes}`);
+        // Türkiye saat dilimini koruyarak ISO formatına dönüştürme fonksiyonu (YYYY-MM-DDTHH:mm)
+        const toLocalISOString = (date: Date) => {
+            const tzOffset = date.getTimezoneOffset() * 60000; // milisaniye cinsinden fark
+            const localISOTime = (new Date(date.getTime() - tzOffset)).toISOString().slice(0, 16);
+            return localISOTime;
+        };
 
-        // Maksimum zaman: En fazla 1 gün sonrası (Yarın gece sonu)
-        const maxDate = new Date();
+        // 1. Minimum Sınır: Tam şu anki anlık saat
+        const minStr = toLocalISOString(now);
+        setMinDateStr(minStr);
+        setPickupDateTime(minStr); // Varsayılan olarak kutunun içinde şu an yazsın
+
+        // 2. Maksimum Sınır: Tam olarak 1 gün sonrası (Yarın gece sonu 23:59)
+        const maxDate = new Date(now);
         maxDate.setDate(now.getDate() + 1);
-        maxDate.setHours(23, 59, 0, 0); // Yarın gün sonuna kadar
+        maxDate.setHours(23, 59, 0, 0);
+        const maxStr = toLocalISOString(maxDate);
+        setMaxDateStr(maxStr);
 
-        const maxYear = maxDate.getFullYear();
-        const maxMonth = String(maxDate.getMonth() + 1).padStart(2, '0');
-        const maxDay = String(maxDate.getDate()).padStart(2, '0');
-        setMaxDateStr(`${maxYear}-${maxMonth}-${maxDay}T23:59`);
-
-        // Varsayılan olarak kutunun içine şimdiki zamanı yazalım
-        setPickupDateTime(`${minYear}-${minMonth}-${minDay}T${minHours}:${minMinutes}`);
     }, []);
 
     const handleIncrement = (id: string) => {
@@ -76,16 +73,20 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
             return;
         }
 
-        // Seçilen tarihi kontrol etme (1 günden fazlası engelleniyor)
+        // Seçilen tarihin milisaniye doğrulaması
         const selectedDate = new Date(pickupDateTime);
         const now = new Date();
+        const maxAllowedDate = new Date(now);
+        maxAllowedDate.setDate(now.getDate() + 1);
+        maxAllowedDate.setHours(23, 59, 59, 999);
 
-        // Zaman farkını gün cinsinden hesapla
-        const diffTime = selectedDate.getTime() - now.getTime();
-        const diffDays = diffTime / (1000 * 60 * 60 * 24);
+        if (selectedDate < now) {
+            alert("Geçmiş bir zamana sipariş oluşturamazsınız.");
+            return;
+        }
 
-        if (diffDays > 1.05) { // Çok ufak saat esnemesi payı ile maksimum 1 gün sınırı
-            alert("Siparişler kalitenin korunması adına en fazla 1 gün sonrasına oluşturulabilir.");
+        if (selectedDate > maxAllowedDate) {
+            alert("Siparişler en fazla 1 gün sonrasına (Yarına) oluşturulabilir.");
             return;
         }
 
@@ -98,7 +99,6 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
 
         localStorage.setItem('tatlikuyu_customer_name', customerName);
 
-        // Tarihi okunaklı formata çevirme (Örn: 23/05/2026 14:30)
         const formattedDate = new Date(pickupDateTime).toLocaleString('tr-TR', {
             day: '2-digit',
             month: '2-digit',
@@ -141,8 +141,8 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
                         <div
                             key={product._id}
                             className={`rounded-[2rem_8px_2rem_8px] p-4 border transition-all duration-300 flex flex-col justify-between group ${isSelected
-                                    ? 'bg-emerald-50/60 border-emerald-300 shadow-md ring-1 ring-emerald-300/30'
-                                    : 'bg-white border-stone-100 hover:border-cyan-100 hover:shadow-lg'
+                                ? 'bg-emerald-50/60 border-emerald-300 shadow-md ring-1 ring-emerald-300/30'
+                                : 'bg-white border-stone-100 hover:border-cyan-100 hover:shadow-lg'
                                 }`}
                         >
                             <div>
@@ -192,7 +192,7 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
                 })}
             </div>
 
-            {/* SAĞ TARAF: BİLGİ VE SİPARİŞ ÖZETİ PANOSU */}
+            {/* SAĞ TARAF: BİLGİ PANOSU */}
             <div className="lg:col-span-4 bg-gradient-to-br from-cyan-900 to-cyan-950 text-white p-6 md:p-8 rounded-[2.5rem_8px_2.5rem_8px] shadow-xl space-y-6 sticky top-24 border-b-8 border-cyan-950">
                 <div>
                     <h2 className="text-xl font-black tracking-tight">Gel-Al Bilgileri</h2>
