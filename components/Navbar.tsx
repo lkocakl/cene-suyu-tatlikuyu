@@ -15,6 +15,7 @@ export default function Navbar() {
         { label: 'Anasayfa', path: '/' },
         { label: 'Mağazamız', path: '/kurumsal' },
         { label: 'Ürün Kataloğu', path: '/urunler' },
+        { label: 'Hızlı Sipariş ⚡', path: '/hizli-siparis' }, // Yeni sekmemiz eklendi
         { label: 'Konum & İletişim', path: '/iletisim' },
     ];
 
@@ -47,8 +48,8 @@ export default function Navbar() {
                                     key={item.path}
                                     href={item.path}
                                     className={`px-4 py-2 rounded-[10px_3px_10px_3px] transition-all duration-200 border ${isActive
-                                            ? 'bg-cyan-50 text-cyan-700 border-cyan-100 shadow-sm'
-                                            : 'border-transparent hover:bg-stone-50 text-stone-600'
+                                        ? 'bg-cyan-50 text-cyan-700 border-cyan-100 shadow-sm'
+                                        : 'border-transparent hover:bg-stone-50 text-stone-600'
                                         }`}
                                 >
                                     {item.label}
