@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import toast from 'react-hot-toast'; // Şık bildirim paketi eklendi
+import toast from 'react-hot-toast';
 
 interface Product {
     _id: string;
@@ -61,12 +61,14 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
         }
     };
 
-    const handleSendOrder = (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSendOrder = (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
 
-        // Kontrol tamamen Toast'ta!
+        // 1. İsim Doğrulaması (Tamamen Toast Kontrolünde)
         if (!customerName.trim()) {
-            toast.error("Lütfen adınızı veya işletme adınızı girin.");
+            toast.error("Lütfen adınızı veya işletme adınızı girin.", {
+                id: 'name-error-toast', // Üst üste binmeyi önleyen benzersiz ID
+            });
             return;
         }
 
@@ -119,13 +121,11 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
         message += `\n💰 _Ödeme dükkanda teslimat esnasında (Nakit/Kart) yapılacaktır._\n`;
         message += `⏱️ _Bu sipariş web sitesi hızlı formu ile dükkanda hazır edilmek üzere gönderilmiştir._`;
 
-        // Başarılı toast mesajı
         toast.success("Sipariş hazırlanıyor, WhatsApp'a yönlendiriliyorsunuz...", { icon: '🚀' });
 
         const whatsappNumber = "905349122051";
         const finalUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
 
-        // Toast'u görebilmesi için 1 saniye bekleyip WhatsApp'a atıyoruz
         setTimeout(() => {
             window.open(finalUrl, '_blank');
         }, 1000);
@@ -134,6 +134,7 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start pb-24 md:pb-0">
 
+            {/* SOL TARAF: ÜRÜN MATRİSİ */}
             <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {products.map((product) => {
                     const currentQty = quantities[product._id] || 0;
@@ -194,14 +195,15 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
                 })}
             </div>
 
+            {/* SAĞ TARAF: BİLGİ PANOSU */}
             <div className="lg:col-span-4 bg-gradient-to-br from-cyan-900 to-cyan-950 text-white p-6 md:p-8 rounded-[2.5rem_8px_2.5rem_8px] shadow-xl space-y-6 sticky top-24 border-b-8 border-cyan-950">
                 <div>
                     <h2 className="text-xl font-black tracking-tight">Gel-Al Bilgileri</h2>
                     <p className="text-cyan-200/60 text-xs mt-1">Siz dükkana ulaştığınızda siparişinizin hazır olması için bilgileri doldurun.</p>
                 </div>
 
-                {/* Formu Native Validation'dan çıkardık */}
-                <form onSubmit={handleSendOrder} noValidate className="space-y-4">
+                {/* noValidate ile formu kesinlikle serbest bıraktık */}
+                <div className="space-y-4">
                     <div>
                         <label className="text-[10px] uppercase font-black tracking-widest text-cyan-300 block mb-1.5">Adınız / İşletme Adı</label>
                         <input
@@ -237,13 +239,15 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
                         />
                     </div>
 
+                    {/* onClick tetiklemesi ile tarayıcı mekanizmalarını tamamen aştık */}
                     <button
-                        type="submit"
+                        type="button"
+                        onClick={() => handleSendOrder()}
                         className="w-full py-4 bg-lime-500 hover:bg-lime-600 text-cyan-950 font-black text-xs uppercase tracking-wider rounded-[14px_4px_14px_4px] transition-all transform hover:scale-[1.02] border-b-4 border-lime-700 shadow-md mt-6"
                     >
                         Siparişi Hazırla & WhatsApp'a Gönder 🚀
                     </button>
-                </form>
+                </div>
             </div>
 
         </div>
