@@ -10,14 +10,13 @@ export default function NotFound() {
 
             <main className="max-w-3xl mx-auto px-4 py-20 flex flex-col items-center text-center space-y-8 flex-grow justify-center">
 
-                {/* Görsel / Grafik Alanı */}
-                <div className="relative">
-                    <div className="text-9xl font-black text-cyan-950/10 tracking-widest select-none animate-pulse">
-                        404
-                    </div>
-                    <div className="absolute inset-0 flex items-center justify-center text-6xl">
-                        🥛🫗
-                    </div>
+                {/* YENİ TASARIM: 4 [Süt Bardağı] 4 Tipografisi */}
+                <div className="flex items-center justify-center font-black text-cyan-950/10 tracking-tight select-none">
+                    <span className="text-[10rem] md:text-[13rem] leading-none">4</span>
+                    <span className="text-[7rem] md:text-[9rem] leading-none mx-2 animate-bounce drop-shadow-sm" style={{ animationDuration: '3s' }}>
+                        🥛
+                    </span>
+                    <span className="text-[10rem] md:text-[13rem] leading-none">4</span>
                 </div>
 
                 {/* Mesaj Alanı */}
