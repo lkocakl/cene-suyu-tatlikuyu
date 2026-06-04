@@ -22,9 +22,3 @@ export default function Loading() {
                                 <div className="h-8 w-full bg-stone-100 rounded mt-4"></div>
                             </div>
                         </div>
-                    ))}
-                </div>
-            </main>
-        </div>
-    );
-}

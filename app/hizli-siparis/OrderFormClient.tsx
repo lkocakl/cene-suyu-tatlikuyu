@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
+import toast from 'react-hot-toast'; // Şık bildirim paketi eklendi
 
 interface Product {
     _id: string;
@@ -26,28 +26,23 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
     const [note, setNote] = useState('');
 
     useEffect(() => {
-        // Hafızadan müşteri ismini yükle
         const savedName = localStorage.getItem('tatlikuyu_customer_name');
         if (savedName) {
             setCustomerName(savedName);
         }
 
-        // Bilgisayarın/Telefonun yerel saatine göre net tarih hesaplama
         const now = new Date();
 
-        // Türkiye saat dilimini koruyarak ISO formatına dönüştürme fonksiyonu (YYYY-MM-DDTHH:mm)
         const toLocalISOString = (date: Date) => {
-            const tzOffset = date.getTimezoneOffset() * 60000; // milisaniye cinsinden fark
+            const tzOffset = date.getTimezoneOffset() * 60000;
             const localISOTime = (new Date(date.getTime() - tzOffset)).toISOString().slice(0, 16);
             return localISOTime;
         };
 
-        // 1. Minimum Sınır: Tam şu anki anlık saat
         const minStr = toLocalISOString(now);
         setMinDateStr(minStr);
-        setPickupDateTime(minStr); // Varsayılan olarak kutunun içinde şu an yazsın
+        setPickupDateTime(minStr);
 
-        // 2. Maksimum Sınır: Tam olarak 1 gün sonrası (Yarın gece sonu 23:59)
         const maxDate = new Date(now);
         maxDate.setDate(now.getDate() + 1);
         maxDate.setHours(23, 59, 0, 0);
@@ -69,6 +64,7 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
     const handleSendOrder = (e: React.FormEvent) => {
         e.preventDefault();
 
+        // Kontrol tamamen Toast'ta!
         if (!customerName.trim()) {
             toast.error("Lütfen adınızı veya işletme adınızı girin.");
             return;
@@ -86,7 +82,7 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
         }
 
         if (selectedDate > maxAllowedDate) {
-            toast.error("Siparişler en fazla 1 gün sonrasına oluşturulabilir.");
+            toast.error("Siparişler en fazla 1 gün sonrasına (Yarına) oluşturulabilir.");
             return;
         }
 
@@ -100,7 +96,11 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
         localStorage.setItem('tatlikuyu_customer_name', customerName);
 
         const formattedDate = new Date(pickupDateTime).toLocaleString('tr-TR', {
-            day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
         });
 
         let message = `🏪 *TATLIKUYU DOĞAL - GEL-AL SİPARİŞİ*\n\n`;
@@ -119,13 +119,13 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
         message += `\n💰 _Ödeme dükkanda teslimat esnasında (Nakit/Kart) yapılacaktır._\n`;
         message += `⏱️ _Bu sipariş web sitesi hızlı formu ile dükkanda hazır edilmek üzere gönderilmiştir._`;
 
-        // Başarı bildirimi
-        toast.success("Sipariş WhatsApp'a yönlendiriliyor...", { icon: '🚀' });
+        // Başarılı toast mesajı
+        toast.success("Sipariş hazırlanıyor, WhatsApp'a yönlendiriliyorsunuz...", { icon: '🚀' });
 
         const whatsappNumber = "905349122051";
         const finalUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
 
-        // Yönlendirme için 1 saniye beklet (Kullanıcı başarı mesajını görsün)
+        // Toast'u görebilmesi için 1 saniye bekleyip WhatsApp'a atıyoruz
         setTimeout(() => {
             window.open(finalUrl, '_blank');
         }, 1000);
@@ -134,7 +134,6 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start pb-24 md:pb-0">
 
-            {/* SOL TARAF: ÜRÜN MATRİSİ */}
             <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {products.map((product) => {
                     const currentQty = quantities[product._id] || 0;
@@ -144,8 +143,8 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
                         <div
                             key={product._id}
                             className={`rounded-[2rem_8px_2rem_8px] p-4 border transition-all duration-300 flex flex-col justify-between group ${isSelected
-                                ? 'bg-emerald-50/60 border-emerald-300 shadow-md ring-1 ring-emerald-300/30'
-                                : 'bg-white border-stone-100 hover:border-cyan-100 hover:shadow-lg'
+                                    ? 'bg-emerald-50/60 border-emerald-300 shadow-md ring-1 ring-emerald-300/30'
+                                    : 'bg-white border-stone-100 hover:border-cyan-100 hover:shadow-lg'
                                 }`}
                         >
                             <div>
@@ -195,20 +194,19 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
                 })}
             </div>
 
-            {/* SAĞ TARAF: BİLGİ PANOSU */}
             <div className="lg:col-span-4 bg-gradient-to-br from-cyan-900 to-cyan-950 text-white p-6 md:p-8 rounded-[2.5rem_8px_2.5rem_8px] shadow-xl space-y-6 sticky top-24 border-b-8 border-cyan-950">
                 <div>
                     <h2 className="text-xl font-black tracking-tight">Gel-Al Bilgileri</h2>
                     <p className="text-cyan-200/60 text-xs mt-1">Siz dükkana ulaştığınızda siparişinizin hazır olması için bilgileri doldurun.</p>
                 </div>
 
-                <form onSubmit={handleSendOrder} className="space-y-4">
+                {/* Formu Native Validation'dan çıkardık */}
+                <form onSubmit={handleSendOrder} noValidate className="space-y-4">
                     <div>
                         <label className="text-[10px] uppercase font-black tracking-widest text-cyan-300 block mb-1.5">Adınız / İşletme Adı</label>
                         <input
                             type="text"
                             placeholder="İsim Soyisim giriniz"
-                            required
                             className="w-full px-4 py-3 bg-white/10 border border-white/10 rounded-[12px_4px_12px_4px] focus:outline-none focus:border-lime-400 text-white placeholder:text-white/40 text-xs font-medium"
                             value={customerName}
                             onChange={(e) => setCustomerName(e.target.value)}
@@ -219,7 +217,6 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
                         <label className="text-[10px] uppercase font-black tracking-widest text-cyan-300 block mb-1.5">Geliş Tarihi ve Saati</label>
                         <input
                             type="datetime-local"
-                            required
                             min={minDateStr}
                             max={maxDateStr}
                             className="w-full px-4 py-3 bg-white/10 border border-white/10 rounded-[12px_4px_12px_4px] focus:outline-none focus:border-lime-400 text-white text-xs font-bold [color-scheme:dark]"
