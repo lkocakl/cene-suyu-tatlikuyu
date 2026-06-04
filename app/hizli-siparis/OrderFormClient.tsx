@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import Image from 'next/image';
 
 interface Product {
     _id: string;
@@ -144,17 +145,24 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
                         <div
                             key={product._id}
                             className={`rounded-[2rem_8px_2rem_8px] p-4 border transition-all duration-300 flex flex-col justify-between group ${isSelected
-                                    ? 'bg-emerald-50/60 border-emerald-300 shadow-md ring-1 ring-emerald-300/30'
-                                    : 'bg-white border-stone-100 hover:border-cyan-100 hover:shadow-lg'
+                                ? 'bg-emerald-50/60 border-emerald-300 shadow-md ring-1 ring-emerald-300/30'
+                                : 'bg-white border-stone-100 hover:border-cyan-100 hover:shadow-lg'
                                 }`}
                         >
                             <div>
                                 <div className="relative h-40 w-full rounded-[1.5rem_4px_1.5rem_4px] overflow-hidden bg-stone-50 mb-3">
                                     {product.imageUrl && (
-                                        <img src={product.imageUrl} alt={product.title} className="w-full h-full object-cover" />
+                                        <Image
+                                            src={product.imageUrl}
+                                            alt={product.title}
+                                            fill
+                                            sizes="(max-width: 768px) 100vw, 50vw"
+                                            className="object-cover group-hover:scale-105 transition duration-500"
+                                            priority={true}
+                                        />
                                     )}
                                     {isSelected && (
-                                        <div className="absolute top-2 right-2 bg-emerald-600 text-white text-[10px] font-black px-2.5 py-1 rounded-[6px_2px_6px_2px] shadow-sm animate-pulse">
+                                        <div className="absolute top-2 right-2 bg-emerald-600 text-white text-[10px] font-black px-2.5 py-1 rounded-[6px_2px_6px_2px] shadow-sm animate-pulse z-10">
                                             SEPETTE ✔
                                         </div>
                                     )}

@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Toaster } from "react-hot-toast";
+import { Analytics } from "@vercel/analytics/react"; // Paket dahil edildi
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
-// Gelişmiş SEO ve Open Graph (Sosyal Medya) Meta Verileri
 export const metadata: Metadata = {
   title: {
     default: "Gebze Tatlıkuyu Çene Suyu Bayii | Doğal Şarküteri Ürünleri",
     template: "%s | Tatlıkuyu Çene Suyu"
   },
-  description: "Kocaeli Gebze Tatlıkuyu'da İzmit'in şifalı Çene Suyu çeşitleri, bardak su seçenekleri, günlük taze köy sütü ve çiftlik yumurtası kapınızda hazır! Toptan ve perakende doğal gıda noktası.",
+  description: "Kocaeli Gebze Tatlıkuyu'da İzmit'in tescilli şifalı Çene Suyu çeşitleri, bardak su seçenekleri, günlük taze köy sütü ve çiftlik yumurtası kapınızda hazır! Toptan ve perakende doğal gıda noktası.",
   keywords: [
     "gebze çene suyu",
     "tatlıkuyu su bayii",
@@ -24,7 +24,6 @@ export const metadata: Metadata = {
   authors: [{ name: "Tatlıkuyu Çene Suyu Bayii" }],
   metadataBase: new URL('https://cene-suyu-tatlikuyu.vercel.app'),
 
-  // WhatsApp ve Sosyal Medyada Paylaşınca Çıkacak Şık Kart Ayarları
   openGraph: {
     title: "Gebze Tatlıkuyu Çene Suyu Bayii | Doğal Köy Ürünleri",
     description: "Günlük taze köy sütü, çiftlik yumurtası ve tescilli şifalı Çene Suyu çeşitleri. Sıra beklemeden Gel-Al formumuzla siparişinizi önden hazırlayın!",
@@ -53,7 +52,7 @@ export default function RootLayout({
           toastOptions={{
             duration: 3000,
             style: {
-              background: '#164e63', // Şarküteri rengimizle uyumlu koyu cyan
+              background: '#164e63',
               color: '#fff',
               borderRadius: '12px',
               fontSize: '14px',
@@ -61,6 +60,8 @@ export default function RootLayout({
             },
           }}
         />
+        {/* Canlı veri analitiği izleme motoru */}
+        <Analytics />
       </body>
     </html>
   );
