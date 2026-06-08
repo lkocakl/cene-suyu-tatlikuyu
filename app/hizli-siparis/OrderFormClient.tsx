@@ -5,8 +5,6 @@ import toast from 'react-hot-toast';
 import Image from 'next/image';
 import { Product } from '../../types';
 
-
-
 interface OrderFormClientProps {
     products: Product[];
 }
@@ -18,6 +16,9 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
     const [minDateStr, setMinDateStr] = useState('');
     const [maxDateStr, setMaxDateStr] = useState('');
     const [note, setNote] = useState('');
+
+    // Kırık resim durumlarını takip etmek için state listesi
+    const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({});
 
     useEffect(() => {
         const savedName = localStorage.getItem('tatlikuyu_customer_name');
@@ -58,10 +59,9 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
     const handleSendOrder = (e?: React.FormEvent) => {
         if (e) e.preventDefault();
 
-        // 1. İsim Doğrulaması (Tamamen Toast Kontrolünde)
         if (!customerName.trim()) {
             toast.error("Lütfen adınızı veya işletme adınızı girin.", {
-                id: 'name-error-toast', // Üst üste binmeyi önleyen benzersiz ID
+                id: 'name-error-toast',
             });
             return;
         }
@@ -133,29 +133,33 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
                 {products.map((product) => {
                     const currentQty = quantities[product._id] || 0;
                     const isSelected = currentQty > 0;
+                    const hasImageError = imageErrors[product._id];
 
                     return (
                         <div
                             key={product._id}
-                            className={`rounded-[2rem_8px_2rem_8px] p-4 border transition-all duration-300 flex flex-col justify-between group ${isSelected
-                                ? 'bg-emerald-50/60 border-emerald-300 shadow-md ring-1 ring-emerald-300/30'
-                                : 'bg-white border-stone-100 hover:border-cyan-100 hover:shadow-lg'
+                            className={`rounded-asym-card p-4 border transition-all duration-300 flex flex-col justify-between group ${isSelected
+                                    ? 'bg-emerald-50/60 border-emerald-300 shadow-md ring-1 ring-emerald-300/30'
+                                    : 'bg-white border-stone-100 hover:border-cyan-100 hover:shadow-lg'
                                 }`}
                         >
                             <div>
-                                <div className="relative h-40 w-full rounded-[1.5rem_4px_1.5rem_4px] overflow-hidden bg-stone-50 mb-3">
+                                <div className="relative h-40 w-full rounded-asym-lg overflow-hidden bg-stone-50 mb-3">
                                     {product.imageUrl && (
                                         <Image
-                                            src={product.imageUrl}
+                                            src={hasImageError ? "/favicon.ico" : product.imageUrl}
                                             alt={product.title}
                                             fill
                                             sizes="(max-width: 768px) 100vw, 50vw"
                                             className="object-cover group-hover:scale-105 transition duration-500"
                                             priority={true}
+                                            onError={() => {
+                                                setImageErrors(prev => ({ ...prev, [product._id]: true }));
+                                            }}
                                         />
                                     )}
                                     {isSelected && (
-                                        <div className="absolute top-2 right-2 bg-emerald-600 text-white text-[10px] font-black px-2.5 py-1 rounded-[6px_2px_6px_2px] shadow-sm animate-pulse z-10">
+                                        <div className="absolute top-2 right-2 bg-emerald-600 text-white text-[10px] font-black px-2.5 py-1 rounded-asym-sm shadow-sm animate-pulse z-10">
                                             SEPETTE ✔
                                         </div>
                                     )}
@@ -166,15 +170,15 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
                             </div>
 
                             <div className="mt-4 pt-3 border-t border-stone-100/60 flex items-center justify-between gap-2">
-                                <span className="text-xs font-black text-stone-600 bg-stone-50 px-2 py-1 rounded-[4px_2px_4px_2px]">
+                                <span className="text-xs font-black text-stone-600 bg-stone-50 px-2 py-1 rounded-asym-sm">
                                     {product.price}
                                 </span>
 
-                                <div className="flex items-center bg-stone-100 p-1 rounded-[10px_3px_10px_3px] border border-stone-200/40">
+                                <div className="flex items-center bg-stone-100 p-1 rounded-asym-sm border border-stone-200/40">
                                     <button
                                         type="button"
                                         onClick={() => handleDecrement(product._id)}
-                                        className="w-8 h-8 rounded-[6px_2px_6px_2px] bg-white hover:bg-stone-200 text-stone-800 font-bold text-sm transition"
+                                        className="w-8 h-8 rounded-asym-sm bg-white hover:bg-stone-200 text-stone-800 font-bold text-sm transition cursor-pointer"
                                     >
                                         -
                                     </button>
@@ -184,7 +188,7 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
                                     <button
                                         type="button"
                                         onClick={() => handleIncrement(product._id)}
-                                        className="w-8 h-8 rounded-[6px_2px_6px_2px] bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-sm transition"
+                                        className="w-8 h-8 rounded-asym-sm bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-sm transition cursor-pointer"
                                     >
                                         +
                                     </button>
@@ -197,20 +201,19 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
             </div>
 
             {/* SAĞ TARAF: BİLGİ PANOSU */}
-            <div className="lg:col-span-4 bg-gradient-to-br from-cyan-900 to-cyan-950 text-white p-6 md:p-8 rounded-[2.5rem_8px_2.5rem_8px] shadow-xl space-y-6 sticky top-24 border-b-8 border-cyan-950">
+            <div className="lg:col-span-4 bg-gradient-to-br from-cyan-900 to-cyan-950 text-white p-6 md:p-8 rounded-asym-card shadow-xl space-y-6 sticky top-24 border-b-8 border-cyan-950">
                 <div>
                     <h2 className="text-xl font-black tracking-tight">Gel-Al Bilgileri</h2>
                     <p className="text-cyan-200/60 text-xs mt-1">Siz dükkana ulaştığınızda siparişinizin hazır olması için bilgileri doldurun.</p>
                 </div>
 
-                {/* noValidate ile formu kesinlikle serbest bıraktık */}
                 <div className="space-y-4">
                     <div>
                         <label className="text-[10px] uppercase font-black tracking-widest text-cyan-300 block mb-1.5">Adınız / İşletme Adı</label>
                         <input
                             type="text"
                             placeholder="İsim Soyisim giriniz"
-                            className="w-full px-4 py-3 bg-white/10 border border-white/10 rounded-[12px_4px_12px_4px] focus:outline-none focus:border-lime-400 text-white placeholder:text-white/40 text-xs font-medium"
+                            className="w-full px-4 py-3 bg-white/10 border border-white/10 rounded-asym-md focus:outline-none focus:border-lime-400 text-white placeholder:text-white/40 text-xs font-medium"
                             value={customerName}
                             onChange={(e) => setCustomerName(e.target.value)}
                         />
@@ -222,7 +225,7 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
                             type="datetime-local"
                             min={minDateStr}
                             max={maxDateStr}
-                            className="w-full px-4 py-3 bg-white/10 border border-white/10 rounded-[12px_4px_12px_4px] focus:outline-none focus:border-lime-400 text-white text-xs font-bold [color-scheme:dark]"
+                            className="w-full px-4 py-3 bg-white/10 border border-white/10 rounded-asym-md focus:outline-none focus:border-lime-400 text-white text-xs font-bold [color-scheme:dark]"
                             value={pickupDateTime}
                             onChange={(e) => setPickupDateTime(e.target.value)}
                         />
@@ -234,17 +237,16 @@ export default function OrderFormClient({ products }: OrderFormClientProps) {
                         <textarea
                             rows={3}
                             placeholder=""
-                            className="w-full px-4 py-3 bg-white/10 border border-white/10 rounded-[12px_4px_12px_4px] focus:outline-none focus:border-lime-400 text-white text-xs font-medium resize-none"
+                            className="w-full px-4 py-3 bg-white/10 border border-white/10 rounded-asym-md focus:outline-none focus:border-lime-400 text-white text-xs font-medium resize-none"
                             value={note}
                             onChange={(e) => setNote(e.target.value)}
                         />
                     </div>
 
-                    {/* onClick tetiklemesi ile tarayıcı mekanizmalarını tamamen aştık */}
                     <button
                         type="button"
                         onClick={() => handleSendOrder()}
-                        className="w-full py-4 bg-lime-500 hover:bg-lime-600 text-cyan-950 font-black text-xs uppercase tracking-wider rounded-[14px_4px_14px_4px] transition-all transform hover:scale-[1.02] border-b-4 border-lime-700 shadow-md mt-6"
+                        className="w-full py-4 bg-lime-500 hover:bg-lime-600 text-cyan-950 font-black text-xs uppercase tracking-wider rounded-asym-md transition-all transform hover:scale-[1.02] border-b-4 border-lime-700 shadow-md mt-6 cursor-pointer"
                     >
                         Siparişi Hazırla & WhatsApp'a Gönder 🚀
                     </button>
