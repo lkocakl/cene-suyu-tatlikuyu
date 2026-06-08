@@ -3,16 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
+import { Product } from '../../types';
 
-interface Product {
-    _id: string;
-    title: string;
-    category: string;
-    packaging: string;
-    description: string;
-    price: string;
-    imageUrl: string;
-}
+
 
 interface OrderFormClientProps {
     products: Product[];

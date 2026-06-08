@@ -5,16 +5,9 @@ import React from 'react';
 import { client } from '../../sanity/client';
 import Navbar from '../../components/Navbar';
 import OrderFormClient from './OrderFormClient';
+import { Product } from '../../types';
 
-interface Product {
-    _id: string;
-    title: string;
-    category: string;
-    packaging: string;
-    description: string;
-    price: string;
-    imageUrl: string;
-}
+
 
 // Sanity'den güncel su ve şarküteri ürünlerini çeken fonksiyon
 async function getProducts() {
