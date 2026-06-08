@@ -1,5 +1,4 @@
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+
 
 import React from 'react';
 import Link from 'next/link';
@@ -27,9 +26,10 @@ async function getProducts() {
     "imageUrl": imageUrl.asset->url
   }`;
     try {
-        const data = await client.fetch(query, {}, { next: { revalidate: 0 } });
+        const data = await client.fetch(query, {}, { next: { revalidate: 3600 } });
         return data || [];
     } catch (error) {
+        console.error("Katalog çekim hatası:", error);
         return [];
     }
 }
@@ -85,8 +85,8 @@ export default async function ProductsPage({ searchParams }: PageProps) {
                                 key={cat}
                                 href={`/urunler?kategori=${encodeURIComponent(cat)}&ara=${encodeURIComponent(searchQuery)}`}
                                 className={`px-5 py-2.5 rounded-[12px_4px_12px_4px] text-xs md:text-sm font-black transition-all border-b-2 block ${selectedCategory === cat
-                                        ? 'bg-cyan-600 text-white border-cyan-800'
-                                        : 'bg-stone-100 text-stone-600 border-stone-200 hover:bg-stone-200'
+                                    ? 'bg-cyan-600 text-white border-cyan-800'
+                                    : 'bg-stone-100 text-stone-600 border-stone-200 hover:bg-stone-200'
                                     }`}
                             >
                                 {cat}

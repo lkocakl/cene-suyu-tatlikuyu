@@ -1,13 +1,8 @@
-import { createClient } from 'next-sanity';
-import imageUrlBuilder from '@sanity/image-url';
-import { sanityConfig } from './config';
+import { createClient } from '@sanity/client';
 
-// Veritabanı isteklerini atan ana istemci
-export const client = createClient(sanityConfig);
-
-// Görselleri işleyen Sanity motoru
-const builder = imageUrlBuilder(client);
-
-export function urlFor(source: any) {
-    return builder.image(source).url();
-}
+export const client = createClient({
+    projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID, // Artık şifreli ve gizli
+    dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
+    apiVersion: '2026-06-08', // Güncel kararlı API sürümü
+    useCdn: true, // Profesyonel önbellekleme (Hız) için burayı true yapıyoruz
+});
