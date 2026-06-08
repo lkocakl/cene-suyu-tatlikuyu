@@ -5,6 +5,25 @@
   --foreground: #171717;
 }
 
+@theme {
+  /* Tatlıkuyu Gurme Marka Renk Paleti Tokenları */
+  --color-brand-dark: #083344;
+  /* bg-brand-dark */
+  --color-brand-primary: #0e7490;
+  /* text-brand-primary */
+  --color-brand-light: #ecfeff;
+  /* bg-brand-light */
+  --color-brand-accent: #84cc16;
+  /* bg-brand-accent */
+
+  /* Projedeki Tüm Sıçramaları Engelleyen Asimetrik Köşe Tokenları */
+  --radius-asym-sm: 10px 3px 10px 3px;
+  --radius-asym-md: 14px 4px 14px 4px;
+  --radius-asym-lg: 16px 4px 16px 4px;
+  --radius-asym-xl: 24px 6px 24px 6px;
+  --radius-asym-card: 2rem 8px 2rem 8px;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
